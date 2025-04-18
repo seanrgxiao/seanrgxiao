@@ -1,7 +1,12 @@
 provider "aws" {
   region = "ap-southeast-1"
 }
-
+data "aws_subnets" "default" {
+  filter {
+    name = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
 resource "aws_launch_template" "example" {
   name_prefix = "asg-example-vm-"
   image_id           = "ami-01938df366ac2d954"
