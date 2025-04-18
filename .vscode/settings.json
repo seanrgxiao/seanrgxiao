@@ -1,0 +1,14 @@
+{
+    "editor.tokenColorCustomizations": {
+      "textMateRules": [
+        {
+          "scope": "keyword",
+          "settings": {
+            "foreground": "#ff79c6"
+          }
+        }
+      ]
+    },
+    "workbench.colorTheme": "Monokai"
+  }
+  
