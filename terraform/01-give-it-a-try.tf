@@ -17,7 +17,10 @@ resource "aws_launch_template" "example" {
   }
 }
 resource "aws_autoscaling_group" "example" {
-  launch_template = aws_launch_template.example.name
+  launch_template = {
+    id = aws_launch_template.example.id
+    version = "$Latest"
+  }
   min_size = 2
   max_size = 10
 
