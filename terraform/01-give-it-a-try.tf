@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_launch_template" "example" {
-  name_prefix = 'asg-example-vm-'
+  name_prefix = "asg-example-vm-"
   image_id           = "ami-01938df366ac2d954"
   instance_type = "t2.micro"
   security_groups = [aws_security_group.instance.id]
