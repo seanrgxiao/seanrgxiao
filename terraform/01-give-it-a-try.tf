@@ -31,6 +31,7 @@ resource "aws_launch_template" "example" {
   }
 }
 resource "aws_autoscaling_group" "example" {
+  vpc_zone_identifier = data.aws_subnets.default.ids
   launch_template {
     id = aws_launch_template.example.id
     version = "$Latest"
