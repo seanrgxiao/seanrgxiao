@@ -7,11 +7,17 @@ resource "aws_launch_template" "example" {
   image_id           = "ami-01938df366ac2d954"
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
+  # user_data = base64encode(<<EOF
+  #             #!/bin/bash
+  #             echo "Hello, World" > index.html
+  #             nohup busybox httpd -f -p ${var.server_port} &
+  #             EOF)
   user_data = base64encode(<<EOF
-              #!/bin/bash
-              echo "Hello, World" > index.html
-              nohup busybox httpd -f -p ${var.server_port} &
-              EOF)
+    #!/bin/bash
+    echo "Hello, World" > index.html
+    nohup busybox httpd -f -p ${var.server_port} &
+    EOF
+    )
   lifecycle {
     create_before_destroy = true
   }
