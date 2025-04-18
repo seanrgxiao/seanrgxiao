@@ -17,7 +17,7 @@ resource "aws_launch_template" "example" {
   }
 }
 resource "aws_autoscaling_group" "example" {
-  launch_template = {
+  launch_template {
     id = aws_launch_template.example.id
     version = "$Latest"
   }
