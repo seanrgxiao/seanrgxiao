@@ -61,7 +61,7 @@ resource "aws_security_group" "instance" {
 
 resource "aws_launch_template" "example" {
   name_prefix   = "asg-example-"
-  image_id      = "ami-08c40ec9ead489470" # Amazon Linux 2
+  image_id      = "ami-05ab12222a9f39021" # Amazon Linux 2
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
 
