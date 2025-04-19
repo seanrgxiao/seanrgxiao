@@ -22,6 +22,8 @@ resource "aws_launch_template" "example" {
   #             EOF)
   user_data = base64encode(<<EOF
     #!/bin/bash
+    exec > /var/log/user-data.log 2>&1
+    set -x
     echo "Hello, World" > index.html
     echo "Hello, World" > /tmp/index.html
     nohup busybox httpd -f -p ${var.server_port} &
