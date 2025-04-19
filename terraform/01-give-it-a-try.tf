@@ -53,7 +53,12 @@ resource "aws_autoscaling_group" "example" {
 }
 resource "aws_security_group" "instance" {
   name = "terraform-example-instance"
-
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   ingress {
     from_port   = var.server_port
     to_port     = var.server_port
