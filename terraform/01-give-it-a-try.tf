@@ -41,6 +41,10 @@ resource "aws_autoscaling_group" "example" {
   min_size = 2
   max_size = 10
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tag {
     key = "Name"
     value = "terraform-asg-example"
