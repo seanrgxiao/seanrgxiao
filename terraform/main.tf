@@ -15,11 +15,7 @@ resource "aws_launch_template" "example" {
   image_id           = "ami-01938df366ac2d954"
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
-  # user_data = base64encode(<<EOF
-  #             #!/bin/bash
-  #             echo "Hello, World" > index.html
-  #             nohup busybox httpd -f -p ${var.server_port} &
-  #             EOF)
+
   user_data = base64encode(<<EOF
     #!/bin/bash
     exec > /var/log/user-data.log 2>&1
@@ -152,7 +148,3 @@ variable "server_port" {
   default = 80
 }
 
-# output "public_ip" {
-#   value = aws_instance.example.public_ip
-#   description = "The public IP address of the web server"
-# }
