@@ -1,19 +1,28 @@
 provider "aws" {
   region = "ap-southeast-1"
 }
-
-resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
+data "aws_vpc" "main" {
+  default = true
+}
+data "aws_subnets" "main" {
+  filter {
+    name = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
 }
 
-resource "aws_subnet" "main" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
-  map_public_ip_on_launch = true
-  availability_zone       = "ap-southeast-1a"
-}
+# resource "aws_vpc" "main" {
+#   cidr_block           = "10.0.0.0/16"
+#   enable_dns_support   = true
+#   enable_dns_hostnames = true
+# }
+
+# resource "aws_subnet" "main" {
+#   vpc_id                  = aws_vpc.main.id
+#   cidr_block              = "10.0.1.0/24"
+#   map_public_ip_on_launch = true
+#   availability_zone       = "ap-southeast-1a"
+# }
 
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.main.id
@@ -96,7 +105,7 @@ resource "aws_lb" "alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.instance.id]
-  subnets            = [aws_subnet.main.id]
+  subnets            = data.aws_subnets.default.ids
 }
 
 resource "aws_lb_target_group" "tg" {
