@@ -38,7 +38,7 @@ resource "aws_route_table" "rt" {
 }
 
 resource "aws_route_table_association" "a" {
-  subnet_id      = aws_subnet.main.id
+  subnet_id      = data.aws_subnets.main.id
   route_table_id = aws_route_table.rt.id
 }
 
@@ -81,7 +81,7 @@ resource "aws_autoscaling_group" "asg" {
   desired_capacity     = 2
   max_size             = 3
   min_size             = 1
-  vpc_zone_identifier  = [aws_subnet.main.id]
+  vpc_zone_identifier  = data.aws_subnets.main.id
 
   launch_template {
     id      = aws_launch_template.example.id
@@ -105,7 +105,7 @@ resource "aws_lb" "alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.instance.id]
-  subnets            = data.aws_subnets.default.ids
+  subnets            = data.aws_subnets.main.ids
 }
 
 resource "aws_lb_target_group" "tg" {
