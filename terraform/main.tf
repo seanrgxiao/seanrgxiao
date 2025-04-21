@@ -24,18 +24,18 @@ data "aws_subnets" "main" {
 #   availability_zone       = "ap-southeast-1a"
 # }
 
-resource "aws_internet_gateway" "gw" {
-  vpc_id = data.aws_vpc.main.id
-}
+# resource "aws_internet_gateway" "gw" {
+#   vpc_id = data.aws_vpc.main.id
+# }
 
-resource "aws_route_table" "rt" {
-  vpc_id = data.aws_vpc.main.id
+# resource "aws_route_table" "rt" {
+#   vpc_id = data.aws_vpc.main.id
 
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.gw.id
-  }
-}
+#   route {
+#     cidr_block = "0.0.0.0/0"
+#     gateway_id = aws_internet_gateway.gw.id
+#   }
+# }
 
 resource "aws_route_table_association" "a" {
   subnet_id      = data.aws_subnets.main.id
