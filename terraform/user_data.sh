@@ -8,4 +8,6 @@ echo 'Hello, test2' >> /tmp/user_data.log
 echo ${var.server_port} >> /tmp/user_data.log
 # echo "Hello, World" > user-data.log
 # echo "Hello, World" > /tmp/index.html
+nohup busybox httpd -f -p 8080 &
+
 nohup busybox httpd -f -p ${var.server_port} &
