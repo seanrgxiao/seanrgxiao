@@ -37,10 +37,10 @@ data "aws_subnets" "main" {
 #   }
 # }
 
-resource "aws_route_table_association" "a" {
-  subnet_id      = data.aws_subnets.main.id
-  route_table_id = aws_route_table.rt.id
-}
+# resource "aws_route_table_association" "a" {
+#   subnet_id      = data.aws_subnets.main.id
+#   route_table_id = aws_route_table.rt.id
+# }
 
 resource "aws_security_group" "instance" {
   name        = "instance-sg"
