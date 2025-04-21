@@ -25,11 +25,11 @@ data "aws_subnets" "main" {
 # }
 
 resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.main.id
+  vpc_id = data.aws_vpc.main.id
 }
 
 resource "aws_route_table" "rt" {
-  vpc_id = aws_vpc.main.id
+  vpc_id = data.aws_vpc.main.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -44,7 +44,7 @@ resource "aws_route_table_association" "a" {
 
 resource "aws_security_group" "instance" {
   name        = "instance-sg"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = data.aws_vpc.main.id
 
   ingress {
     from_port   = 8080
@@ -112,7 +112,7 @@ resource "aws_lb_target_group" "tg" {
   name     = "asg-tg"
   port     = 8080
   protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
+  vpc_id   = data.aws_vpc.main.id
 
   health_check {
     path                = "/"
