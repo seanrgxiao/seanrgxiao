@@ -15,11 +15,16 @@ resource "aws_launch_template" "example" {
   image_id           = "ami-01938df366ac2d954"
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
-  user_data = templatefile(base64encode(file("user_data.sh",{
-    db_address   = data.terraform_remote_state.db.outputs.address,
-    db_port      = data.terraform_remote_state.db.outputs.port,
-    server_port  = var.server_port   
-  })))
+  user_data = templatefile("user-data.sh", {
+    server_port = var.server_port
+    db_address  = data.terraform_remote_state.db.outputs.address
+    db_port     = data.terraform_remote_state.db.outputs.port
+  })  
+  # user_data = templatefile(base64encode(file("user_data.sh",{
+  #   db_address   = data.terraform_remote_state.db.outputs.address,
+  #   db_port      = data.terraform_remote_state.db.outputs.port,
+  #   server_port  = var.server_port   
+  # })))
 
   lifecycle {
     create_before_destroy = true
