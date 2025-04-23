@@ -11,7 +11,7 @@ resource "aws_db_instance" "example" {
   db_name             = "example_database"
 
   # How should we set the username and password?
-  username = "var.db_username"
-  password = "var.db_password"
+  username = var.db_username
+  password = var.db_password
 }
 
