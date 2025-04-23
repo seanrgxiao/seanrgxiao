@@ -1,0 +1,6 @@
+# ~/.bashrc 或 ~/.zshrc 中添加这段（适配 bash/zsh）
+parse_git_branch() {
+  git branch 2>/dev/null | sed -n '/\* /s///p'
+}
+
+export PS1="\[\e[38;5;39m\]\u@\h\[\e[0m\] \[\e[38;5;208m\]\w\[\e[0m\]\[\e[38;5;82m\]@\$(parse_git_branch)\[\e[0m\] \$ "
