@@ -8,7 +8,7 @@ data "aws_subnets" "default" {
   }
 }
 resource "aws_launch_template" "example" {
-  name_prefix = "asg-example-vm-"
+  name_prefix = "${var.cluster_name}-asg-vm-"
   image_id           = "ami-01938df366ac2d954"
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
@@ -44,12 +44,12 @@ resource "aws_autoscaling_group" "example" {
 
   tag {
     key = "Name"
-    value = "terraform-asg-example"
+    value = "${var.cluster_name}-asg"
     propagate_at_launch = true
   }
 }
 resource "aws_security_group" "instance" {
-  name = "terraform-example-instance"
+  name = "${var.cluster_name}-sg"
   ingress {
     from_port   = 22
     to_port     = 22
@@ -64,7 +64,7 @@ resource "aws_security_group" "instance" {
   }
 }
 resource "aws_security_group" "alb" {
-  name = "terraform-example-alb"
+  name = "${var.cluster_name}-sg-alb"
 
   # Allow inbound HTTP requests
   ingress {
@@ -83,7 +83,7 @@ resource "aws_security_group" "alb" {
   }
 }
 resource "aws_lb" "example" {
-  name               = "terraform-asg-example"
+  name               = "${var.cluster_name}-asg-example"
   load_balancer_type = "application"
   subnets            = data.aws_subnets.default.ids
   security_groups    = [aws_security_group.alb.id]
@@ -106,7 +106,7 @@ resource "aws_lb_listener" "http" {
   }
 }
 resource "aws_lb_target_group" "asg" {
-  name     = "terraform-asg-example"
+  name     = "${var.cluster_name}-lb-target-group"
   port     = var.server_port
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id
