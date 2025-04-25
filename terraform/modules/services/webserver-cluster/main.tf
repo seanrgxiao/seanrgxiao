@@ -17,11 +17,6 @@ resource "aws_launch_template" "example" {
     db_address  = data.terraform_remote_state.db.outputs.address
     db_port     = data.terraform_remote_state.db.outputs.port
   }))  
-  # user_data = templatefile(base64encode(file("user_data.sh",{
-  #   db_address   = data.terraform_remote_state.db.outputs.address,
-  #   db_port      = data.terraform_remote_state.db.outputs.port,
-  #   server_port  = var.server_port   
-  # })))
 
   lifecycle {
     create_before_destroy = true
@@ -135,4 +130,39 @@ resource "aws_lb_listener_rule" "asg" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.asg.arn
   }
+}
+
+# variables
+variable "server_port" {
+  description = "The port the server will use for HTTP requests"
+  type = number
+  default = 8080
+}
+variable "cluster_name" {
+  description = "The name to use for all the cluster resources"
+  type        = string
+}
+
+variable "db_remote_state_bucket" {
+  description = "The name of the S3 bucket for the database's remote state"
+  type        = string
+}
+
+variable "db_remote_state_key" {
+  description = "The path for the database's remote state in S3"
+  type        = string
+}
+variable "instance_type" {
+  description = "The type of EC2 Instances to run (e.g. t2.micro)"
+  type        = string
+}
+
+variable "min_size" {
+  description = "The minimum number of EC2 Instances in the ASG"
+  type        = number
+}
+
+variable "max_size" {
+  description = "The maximum number of EC2 Instances in the ASG"
+  type        = number
 }
