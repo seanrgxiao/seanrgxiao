@@ -6,9 +6,9 @@ resource "aws_instance" "example" {
 terraform {
   backend "s3" {
     # Replace this with your bucket name!
-    bucket         = "terraform-up-and-running-state-by-seanrgxiao"
-    key            = "workspaces-example/terraform-single-vm.tfstate"
-    region         = "ap-southeast-1"
+    bucket = "terraform-up-and-running-state-by-seanrgxiao"
+    key    = "workspaces-example/terraform-single-vm.tfstate"
+    region = "ap-southeast-1"
 
     # Replace this with your DynamoDB table name!
     dynamodb_table = "terraform-up-and-running-locks"

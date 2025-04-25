@@ -5,13 +5,13 @@ provider "aws" {
 module "webserver_cluster" {
   source = "../../../modules/services/webserver-cluster"
 
-  cluster_name = "webserver-prod"
+  cluster_name           = "webserver-prod"
   db_remote_state_bucket = "terraform-up-and-running-state-by-seanrgxiao-prod"
-  db_remote_state_key = "stage/services/webserver-cluster/terraform-webserver.tfstate"  
+  db_remote_state_key    = "stage/services/webserver-cluster/terraform-webserver.tfstate"
 
   instance_type = "m4.large"
-  min_size = 2
-  max_size = 10
+  min_size      = 2
+  max_size      = 10
 }
 # terraform {
 #   backend "s3" {
@@ -29,8 +29,8 @@ data "terraform_remote_state" "db" {
   backend = "s3"
 
   config = {
-    bucket         = var.db_remote_state_bucket
-      key            = var.db_remote_state_key
-    region         = "ap-southeast-1"
+    bucket = var.db_remote_state_bucket
+    key    = var.db_remote_state_key
+    region = "ap-southeast-1"
   }
 }

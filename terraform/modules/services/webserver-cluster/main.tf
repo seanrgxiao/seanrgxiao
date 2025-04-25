@@ -3,20 +3,20 @@ data "aws_vpc" "default" {
 }
 data "aws_subnets" "default" {
   filter {
-    name = "vpc-id"
+    name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
 }
 resource "aws_launch_template" "example" {
-  name_prefix = "${var.cluster_name}-asg-vm-"
-  image_id           = "ami-01938df366ac2d954"
-  instance_type = "t2.micro"
+  name_prefix            = "${var.cluster_name}-asg-vm-"
+  image_id               = "ami-01938df366ac2d954"
+  instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
   user_data = base64encode(templatefile("user-data.sh", {
     server_port = var.server_port
     db_address  = data.terraform_remote_state.db.outputs.address
     db_port     = data.terraform_remote_state.db.outputs.port
-  }))  
+  }))
 
   lifecycle {
     create_before_destroy = true
@@ -24,10 +24,10 @@ resource "aws_launch_template" "example" {
 }
 resource "aws_autoscaling_group" "example" {
   vpc_zone_identifier = data.aws_subnets.default.ids
-  target_group_arns = [aws_lb_target_group.asg.arn]
-  health_check_type = "ELB"
+  target_group_arns   = [aws_lb_target_group.asg.arn]
+  health_check_type   = "ELB"
   launch_template {
-    id = aws_launch_template.example.id
+    id      = aws_launch_template.example.id
     version = "$Latest"
   }
   min_size = 2
@@ -38,8 +38,8 @@ resource "aws_autoscaling_group" "example" {
   }
 
   tag {
-    key = "Name"
-    value = "${var.cluster_name}-asg"
+    key                 = "Name"
+    value               = "${var.cluster_name}-asg"
     propagate_at_launch = true
   }
 }
@@ -130,39 +130,4 @@ resource "aws_lb_listener_rule" "asg" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.asg.arn
   }
-}
-
-# variables
-variable "server_port" {
-  description = "The port the server will use for HTTP requests"
-  type = number
-  default = 8080
-}
-variable "cluster_name" {
-  description = "The name to use for all the cluster resources"
-  type        = string
-}
-
-variable "db_remote_state_bucket" {
-  description = "The name of the S3 bucket for the database's remote state"
-  type        = string
-}
-
-variable "db_remote_state_key" {
-  description = "The path for the database's remote state in S3"
-  type        = string
-}
-variable "instance_type" {
-  description = "The type of EC2 Instances to run (e.g. t2.micro)"
-  type        = string
-}
-
-variable "min_size" {
-  description = "The minimum number of EC2 Instances in the ASG"
-  type        = number
-}
-
-variable "max_size" {
-  description = "The maximum number of EC2 Instances in the ASG"
-  type        = number
 }
