@@ -131,3 +131,11 @@ resource "aws_lb_listener_rule" "asg" {
     target_group_arn = aws_lb_target_group.asg.arn
   }
 }
+data "terraform_remote_state" "db" {
+  backend = "s3"
+  config = {
+    bucket = var.db_remote_state_bucket
+    key    = var.db_remote_state_key
+    region = "ap-southeast-1"
+  }
+}
