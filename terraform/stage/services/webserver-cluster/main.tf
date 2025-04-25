@@ -13,11 +13,11 @@ module "webserver_cluster" {
   min_size      = 2
   max_size      = 2
 }
-data "terraform_remote_state" "db" {
-  backend = "s3"
-  config = {
-    bucket = var.db_remote_state_bucket
-    key    = var.db_remote_state_key
-    region = "ap-southeast-1"
-  }
-}
+# data "terraform_remote_state" "db" {
+#   backend = "s3"
+#   config = {
+#     bucket = var.db_remote_state_bucket
+#     key    = var.db_remote_state_key
+#     region = "ap-southeast-1"
+#   }
+# }
