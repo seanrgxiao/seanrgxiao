@@ -10,3 +10,9 @@ output "alb_security_group_id" {
   value = aws_security_group.alb.id
   description = "The ID of the sg attached to the lb"
 }
+output "db_remote_state_bucket" {
+  value = var.db_remote_state_bucket
+}
+output "db_remote_state_key" {
+  value = var.db_remote_state_key
+}
