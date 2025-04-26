@@ -48,13 +48,13 @@ resource "aws_security_group" "instance" {
   ingress {
     from_port   = 22
     to_port     = 22
-    protocol    = local.tcp_protocal
+    protocol    = local.tcp_protocol
     cidr_blocks = local.all_ips
   }
   ingress {
     from_port   = var.server_port
     to_port     = var.server_port
-    protocol    = local.tcp_protocal
+    protocol    = local.tcp_protocol
     cidr_blocks = local.all_ips
   }
 }
@@ -65,7 +65,7 @@ resource "aws_security_group" "alb" {
   ingress {
     from_port   = local.http_port
     to_port     = local.http_port
-    protocol    = local.tcp_protocal
+    protocol    = local.tcp_protocol
     cidr_blocks = local.all_ips
   }
 
@@ -73,7 +73,7 @@ resource "aws_security_group" "alb" {
   egress {
     from_port   = local.any_port
     to_port     = local.any_port
-    protocol    = local.tcp_protocal
+    protocol    = local.tcp_protocol
     cidr_blocks = local.all_ips
   }
 }
