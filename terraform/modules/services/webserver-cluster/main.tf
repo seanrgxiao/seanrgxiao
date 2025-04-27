@@ -83,7 +83,7 @@ resource "aws_lb" "example" {
 
   access_logs {
     bucket  = var.s3_bucket_alb_log
-    prefix  = "alb-logs/"
+    prefix  = "alb-logs"
     enabled = true
   }
 
