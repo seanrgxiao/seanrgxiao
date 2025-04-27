@@ -48,15 +48,6 @@ resource "aws_dynamodb_table" "terraform_locks" {
 resource "aws_s3_bucket" "alb_access_logs" {
   bucket = "alb-access-logs-seanrgxiao"
 
-  # 启用加密
-  # aws_s3_bucket_server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  # }
-
   # 启用生命周期管理，日志30天后删除
   lifecycle {
     prevent_destroy = true
@@ -88,7 +79,16 @@ resource "aws_s3_bucket" "alb_access_logs" {
 }
 POLICY
 }
+# Enable server-side encryption by default
+resource "aws_s3_bucket_server_side_encryption_configuration" "default" {
+  bucket = aws_s3_bucket.alb_access_logs.id
 
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
 data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket_lifecycle_configuration" "alb_logs_lifecycle" {
