@@ -81,6 +81,12 @@ resource "aws_lb" "example" {
   subnets            = data.aws_subnets.default.ids
   security_groups    = [aws_security_group.alb.id]
 
+  access_logs {
+    enabled = true
+    bucket = "logs-${var.cluster_name}"
+    prefix = "alb/alb-${var.cluster_name}"
+  }
+
 }
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.example.arn
