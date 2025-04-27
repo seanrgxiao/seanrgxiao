@@ -15,7 +15,7 @@ module "webserver_cluster" {
   instance_type = "t2.micro"
   min_size      = 2
   max_size      = 2
-  s3_bucket_alb_log = module.s3.s3_bucket_alb_log.name
+  s3_bucket_alb_log = module.s3.s3_bucket_alb_log.bucket
 }
 data "terraform_remote_state" "db" {
   backend = "s3"
