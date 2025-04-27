@@ -2,6 +2,9 @@ provider "aws" {
   region = "ap-southeast-1"
 }
 
+module "s3" {
+  source = "../../../global/s3"
+}
 module "webserver_cluster" {
   source = "../../../modules/services/webserver-cluster"
 
@@ -21,7 +24,4 @@ data "terraform_remote_state" "db" {
     key    = module.webserver_cluster.db_remote_state_key
     region = "ap-southeast-1"
   }
-}
-module "s3" {
-  source = "../../../global/s3"
 }
