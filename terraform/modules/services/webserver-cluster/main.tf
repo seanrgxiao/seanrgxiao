@@ -82,7 +82,7 @@ resource "aws_lb" "example" {
   security_groups    = [aws_security_group.alb.id]
 
   access_logs {
-    bucket  = aws_s3_bucket.alb_access_logs.bucket
+    bucket  = var.s3_bucket_alb_log
     prefix  = "alb-logs/"
     enabled = true
   }

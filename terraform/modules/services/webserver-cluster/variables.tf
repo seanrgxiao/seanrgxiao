@@ -33,7 +33,10 @@ variable "max_size" {
   description = "The maximum number of EC2 Instances in the ASG"
   type        = number
 }
-
+variable "s3_bucket_alb_log" {
+  description = "The bucket for storing alb access log"
+  type = string
+}
 locals {
   http_port = 80
   any_port = 0
