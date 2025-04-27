@@ -82,9 +82,9 @@ resource "aws_lb" "example" {
   security_groups    = [aws_security_group.alb.id]
 
   access_logs {
+    bucket  = aws_s3_bucket.alb_access_logs.bucket
+    prefix  = "alb-logs/"
     enabled = true
-    # bucket = "logs-${var.cluster_name}"
-    # prefix = "alb/alb-${var.cluster_name}"
   }
 
 }
