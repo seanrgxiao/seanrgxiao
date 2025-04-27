@@ -83,8 +83,8 @@ resource "aws_lb" "example" {
 
   access_logs {
     enabled = true
-    bucket = "logs-${var.cluster_name}"
-    prefix = "alb/alb-${var.cluster_name}"
+    # bucket = "logs-${var.cluster_name}"
+    # prefix = "alb/alb-${var.cluster_name}"
   }
 
 }
