@@ -80,7 +80,7 @@ resource "aws_s3_bucket" "alb_access_logs" {
 POLICY
 }
 # Enable server-side encryption by default
-resource "aws_s3_bucket_server_side_encryption_configuration" "default" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "default_alb_access_logs" {
   bucket = aws_s3_bucket.alb_access_logs.id
 
   rule {
