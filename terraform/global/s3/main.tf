@@ -46,7 +46,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
 }
 
 resource "aws_s3_bucket" "alb_access_logs" {
-  bucket = "alb-access-logs-seanrgxiao"
+  bucket = var.alb_bucket_name
 
   # 启用生命周期管理，日志30天后删除
   lifecycle {
@@ -85,6 +85,43 @@ data "aws_iam_policy_document" "allow_access_from_alb" {
       "${aws_s3_bucket.alb_access_logs.arn}/*",
     ]
   }
+}
+
+resource "aws_iam_policy" "alb_s3_access_policy" {
+  name        = "ALBS3AccessPolicy"
+  description = "Policy to allow ALB to access S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "s3:*"  # 允许 ALB 读取对象
+        Resource = "arn:aws:s3:::${var.alb_bucket_name}/*"  # 允许访问存储桶中的所有对象
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "alb_s3_role" {
+  name               = "alb-s3-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = {
+          Service = "elasticloadbalancing.amazonaws.com"
+        }
+        Action    = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "alb_s3_policy_attachment" {
+  policy_arn = aws_iam_policy.alb_s3_log_policy.arn
+  role       = aws_iam_role.alb_s3_role.name
 }
 
 resource "aws_s3_bucket_public_access_block" "s3_alb_logs_block" {
