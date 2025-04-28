@@ -5,6 +5,8 @@ provider "aws" {
 # module "s3" {
 #   source = "../../../global/s3"
 # }
+data "aws_caller_identity" "current" {}
+
 module "webserver_cluster" {
   source = "../../../modules/services/webserver-cluster"
 
