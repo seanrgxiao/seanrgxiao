@@ -67,30 +67,26 @@ data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket_policy" "alb_access_logs_policy" {
   bucket = aws_s3_bucket.alb_access_logs.bucket
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Sid    = "AllowALBAccessLogs",
-        Effect = "Allow",
-        Principal = {
-          Service = "elasticloadbalancing.amazonaws.com"
-        },
-        Action = "s3:PutObject",
-        Resource = "arn:aws:s3:::alb-access-logs-seanrgxiao/*"
-        Condition = {
-          StringEquals = {
-            "AWS:SourceAccount" = data.aws_caller_identity.current.account_id
-          },
-          ArnLike = {
-            "AWS:SourceArn" = "arn:aws:elasticloadbalancing:ap-southeast-1:${data.aws_caller_identity.current.account_id}:loadbalancer/app/*"
-          }
-        }
-      }
-    ]
-  })
+  policy = data.aws_iam_policy_document.allow_access_from_alb.json
 }
+
+data "aws_iam_policy_document" "allow_access_from_alb" {
+  statement {
+    principal {
+      type = "AWS"
+      identifiers = ["${data.aws_caller_identity.current.account_id}"]
+    }
+    action = [
+      "s3:*",
+      "s3:ListBucket"
+    ]
+    resource = [
+      aws_s3_bucket.alb_access_logs.arn,
+      "${aws_s3_bucket.alb_access_logs.arn}/*",
+    ]
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "s3_alb_logs_block" {
   bucket = aws_s3_bucket.alb_access_logs.id
 
