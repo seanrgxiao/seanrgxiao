@@ -37,6 +37,10 @@ variable "s3_bucket_alb_log" {
   description = "The bucket for storing alb access log"
   type = string
 }
+variable "account_id" {
+  description = "The AWS Account ID"
+  type        = string
+}
 locals {
   http_port = 80
   any_port = 0

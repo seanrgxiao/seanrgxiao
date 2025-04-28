@@ -78,7 +78,8 @@ resource "aws_s3_bucket_policy" "alb_access_logs_policy" {
           Service = "elasticloadbalancing.amazonaws.com"
         },
         Action = "s3:PutObject",
-        Resource = "arn:aws:s3:::alb-access-logs-seanrgxiao/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
+        Resource = "arn:aws:s3:::alb-access-logs-seanrgxiao/*"
+        # Resource = "arn:aws:s3:::alb-access-logs-seanrgxiao/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
         Condition = {
           StringEquals = {
             "AWS:SourceAccount" = data.aws_caller_identity.current.account_id
