@@ -52,32 +52,6 @@ resource "aws_s3_bucket" "alb_access_logs" {
   lifecycle {
     prevent_destroy = true
   }
-
-  # S3 Bucket策略，用来允许 ALB 写日志到这个桶
-#   policy = <<POLICY
-# {
-#   "Version": "2012-10-17",
-#   "Statement": [
-#     {
-#       "Sid": "AllowALBAccessLogs",
-#       "Effect": "Allow",
-#       "Principal": {
-#         "Service": "elasticloadbalancing.amazonaws.com"
-#       },
-#       "Action": "s3:PutObject",
-#       "Resource": "arn:aws:s3:::alb-access-logs-seanrgxiao/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
-#       "Condition": {
-#         "StringEquals": {
-#           "AWS:SourceAccount": "${data.aws_caller_identity.current.account_id}"
-#         },
-#         "ArnLike": {
-#           "AWS:SourceArn": "arn:aws:elasticloadbalancing:${var.region}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/*"
-#         }
-#       }
-#     }
-#   ]
-# }
-# POLICY
 }
 # Enable server-side encryption by default
 resource "aws_s3_bucket_server_side_encryption_configuration" "default_alb_access_logs" {
@@ -116,6 +90,14 @@ resource "aws_s3_bucket_policy" "alb_access_logs_policy" {
       }
     ]
   })
+}
+resource "aws_s3_bucket_public_access_block" "s3_alb_logs_block" {
+  bucket = aws_s3_bucket.alb_access_logs.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 resource "aws_s3_bucket_lifecycle_configuration" "alb_logs_lifecycle" {
   bucket = aws_s3_bucket.alb_access_logs.id
