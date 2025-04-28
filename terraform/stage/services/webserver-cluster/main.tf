@@ -5,7 +5,6 @@ provider "aws" {
 # module "s3" {
 #   source = "../../../global/s3"
 # }
-data "aws_caller_identity" "current" {}
 
 module "webserver_cluster" {
   source = "../../../modules/services/webserver-cluster"
@@ -19,7 +18,7 @@ module "webserver_cluster" {
   max_size      = 2
   s3_bucket_alb_log = "alb-access-logs-seanrgxiao"
 
-  account_id = data.aws_caller_identity.current.account_id
+  # account_id = data.aws_caller_identity.current.account_id
 }
 data "terraform_remote_state" "db" {
   backend = "s3"
