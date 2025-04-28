@@ -72,15 +72,15 @@ resource "aws_s3_bucket_policy" "alb_access_logs_policy" {
 
 data "aws_iam_policy_document" "allow_access_from_alb" {
   statement {
-    principal {
+    principals {
       type = "AWS"
       identifiers = ["${data.aws_caller_identity.current.account_id}"]
     }
-    action = [
+    actions = [
       "s3:*",
       "s3:ListBucket"
     ]
-    resource = [
+    resources = [
       aws_s3_bucket.alb_access_logs.arn,
       "${aws_s3_bucket.alb_access_logs.arn}/*",
     ]
