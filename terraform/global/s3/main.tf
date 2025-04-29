@@ -99,7 +99,7 @@ resource "aws_s3_bucket_policy" "alb_logs" {
           Service = "delivery.logs.amazonaws.com"
         }
         Action   = "s3:PutObject"
-        Resource = "${aws_s3_bucket.alb_logs.arn}/*"
+        Resource = "${aws_s3_bucket.alb_access_logs.arn}/*"
         Condition = {
           StringEquals = {
             "s3:x-amz-acl" = "bucket-owner-full-control"
@@ -112,7 +112,7 @@ resource "aws_s3_bucket_policy" "alb_logs" {
           Service = "logdelivery.elasticloadbalancing.amazonaws.com"
         }
         Action   = "s3:PutObject"
-        Resource = "${aws_s3_bucket.alb_logs.arn}/*"
+        Resource = "${aws_s3_bucket.alb_access_logs.arn}/*"
       }
     ]
   })
