@@ -68,7 +68,7 @@ data "aws_caller_identity" "current" {}
 
 # Set appropriate bucket ownership controls
 resource "aws_s3_bucket_ownership_controls" "alb_logs" {
-  bucket = aws_s3_bucket.alb_access_logs.name
+  bucket = aws_s3_bucket.alb_access_logs.bucket
 
   rule {
     object_ownership = "BucketOwnerPreferred"
