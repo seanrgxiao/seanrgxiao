@@ -53,8 +53,8 @@ resource "aws_security_group" "instance" {
     from_port   = var.server_port
     to_port     = var.server_port
     protocol    = local.tcp_protocol
-    cidr_blocks = "172.31.23.255"
-  }  
+    cidr_blocks = "172.31.23.255/32"
+  }
   ingress { 
     from_port   = var.server_port
     to_port     = var.server_port
