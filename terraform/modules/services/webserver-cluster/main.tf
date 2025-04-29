@@ -55,6 +55,12 @@ resource "aws_security_group" "instance" {
     protocol    = local.tcp_protocol
     cidr_blocks = local.all_ips
   }
+  ingress {
+    from_port   = local.http_port
+    to_port     = local.http_port
+    protocol    = local.tcp_protocol
+    cidr_blocks = local.all_ips
+  }  
 }
 resource "aws_security_group" "alb" {
   name = "${var.cluster_name}-sg-alb"
@@ -66,7 +72,12 @@ resource "aws_security_group" "alb" {
     protocol    = local.tcp_protocol
     cidr_blocks = local.all_ips
   }
-
+  ingress {
+    from_port   = var.server_port
+    to_port     = var.server_port
+    protocol    = local.tcp_protocol
+    cidr_blocks = local.all_ips
+  }
   # Allow all outbound requests
   egress {
     from_port   = local.any_port
