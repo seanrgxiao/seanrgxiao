@@ -49,11 +49,16 @@ resource "aws_security_group" "instance" {
     protocol    = local.tcp_protocol
     cidr_blocks = local.all_ips
   }
-  ingress {
+  ingress { 
     from_port   = var.server_port
     to_port     = var.server_port
     protocol    = local.tcp_protocol
-    # cidr_blocks = local.all_ips
+    cidr_blocks = "172.31.23.255"
+  }  
+  ingress { 
+    from_port   = var.server_port
+    to_port     = var.server_port
+    protocol    = local.tcp_protocol
     security_groups = [aws_security_group.alb.id]
   }
 }
