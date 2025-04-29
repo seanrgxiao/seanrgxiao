@@ -12,7 +12,7 @@ resource "aws_launch_template" "example" {
   image_id               = "ami-01938df366ac2d954"
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
-    user_data = base64encode(templatefile("${path.module}/user-data.sh", {
+  user_data = base64encode(templatefile("${path.module}/user-data.sh", {
     server_port = var.server_port
   }))
 
@@ -80,7 +80,7 @@ resource "aws_lb" "example" {
   load_balancer_type = "application"
   subnets            = data.aws_subnets.default.ids
   security_groups    = [aws_security_group.alb.id]
-/*-*/
+  /*-*/
   access_logs {
     bucket  = var.s3_bucket_alb_log
     prefix  = "alb-logs"

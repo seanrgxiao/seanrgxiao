@@ -39,7 +39,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
     name = "LockID"
     type = "S"
   }
- 
+
   lifecycle {
     prevent_destroy = true
   }
@@ -83,10 +83,6 @@ resource "aws_s3_bucket_policy" "alb_logs" {
     Statement = [
       {
         Effect = "Allow"
-        # principal = {
-        #   type = "AWS"
-        #   identifiers = ["${data.aws_caller_identity.current.account_id}"]
-        # }
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         }
@@ -118,27 +114,6 @@ resource "aws_s3_bucket_policy" "alb_logs" {
   })
 }
 
-# resource "aws_s3_bucket_policy" "alb_access_logs_policy" {
-#   bucket = aws_s3_bucket.alb_access_logs.bucket
-#   policy = data.aws_iam_policy_document.allow_access_from_alb.json
-# }
-
-# data "aws_iam_policy_document" "allow_access_from_alb" {
-#   statement {
-#     principals {
-#       type = "AWS"
-#       identifiers = ["${data.aws_caller_identity.current.account_id}"]
-#     }
-#     actions = [
-#       "s3:*"
-#     ]
-#     resources = [
-#       aws_s3_bucket.alb_access_logs.arn,
-#       "${aws_s3_bucket.alb_access_logs.arn}/*",
-#     ]
-#   }
-# }
-
 resource "aws_iam_policy" "alb_s3_access_policy" {
   name        = "ALBS3AccessPolicy"
   description = "Policy to allow ALB to access S3 bucket"
@@ -149,23 +124,23 @@ resource "aws_iam_policy" "alb_s3_access_policy" {
       {
         Effect   = "Allow"
         Action   = "s3:*"
-        Resource = "arn:aws:s3:::${var.alb_bucket_name}/*"  # 允许访问存储桶中的所有对象
+        Resource = "arn:aws:s3:::${var.alb_bucket_name}/*" # 允许访问存储桶中的所有对象
       }
     ]
   })
 }
 
 resource "aws_iam_role" "alb_s3_role" {
-  name               = "alb-s3-role"
+  name = "alb-s3-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect    = "Allow"
+        Effect = "Allow"
         Principal = {
           Service = "elasticloadbalancing.amazonaws.com"
         }
-        Action    = "sts:AssumeRole"
+        Action = "sts:AssumeRole"
       }
     ]
   })
@@ -192,11 +167,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "alb_logs_lifecycle" {
     status = "Enabled"
 
     expiration {
-      days = 30  # 设置30天后删除日志
+      days = 30 # 设置30天后删除日志
     }
 
     filter {
-      prefix = "alb-logs/"  # 限定此规则只适用于日志文件
+      prefix = "alb-logs/" # 限定此规则只适用于日志文件
     }
   }
 }

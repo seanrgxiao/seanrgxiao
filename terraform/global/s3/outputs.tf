@@ -9,6 +9,6 @@ output "dynamodb_table_name" {
 }
 
 output "s3_bucket_alb_log" {
-  value = aws_s3_bucket.alb_access_logs.bucket
+  value       = aws_s3_bucket.alb_access_logs.bucket
   description = "The bucket for access log"
 }
