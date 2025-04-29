@@ -83,10 +83,10 @@ resource "aws_s3_bucket_policy" "alb_logs" {
     Statement = [
       {
         Effect = "Allow"
-        principal = {
-          type = "AWS"
-          identifiers = ["${data.aws_caller_identity.current.account_id}"]
-        }
+        # principal = {
+        #   type = "AWS"
+        #   identifiers = ["${data.aws_caller_identity.current.account_id}"]
+        # }
         # Principal = {
         #   AWS = "arn:aws:iam::${var.elb_account_ids[data.aws_region.current.name]}:root"
         # }
