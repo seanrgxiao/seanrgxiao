@@ -61,6 +61,12 @@ resource "aws_security_group" "instance" {
     protocol    = local.tcp_protocol
     security_groups = [aws_security_group.alb.id]
   }
+  egress {
+    from_port   = local.any_port
+    to_port     = local.any_port
+    protocol    = local.tcp_protocol
+    cidr_blocks = local.all_ips
+  }  
 }
 resource "aws_security_group" "alb" {
   name = "${var.cluster_name}-sg-alb"
