@@ -2,10 +2,6 @@ provider "aws" {
   region = "ap-southeast-1"
 }
 
-# module "s3" {
-#   source = "../../../global/s3"
-# }
-
 module "webserver_cluster" {
   source = "../../../modules/services/webserver-cluster"
 
@@ -17,8 +13,6 @@ module "webserver_cluster" {
   min_size      = 2
   max_size      = 2
   s3_bucket_alb_log = "alb-access-logs-seanrgxiao"
-
-  # account_id = data.aws_caller_identity.current.account_id
 }
 data "terraform_remote_state" "db" {
   backend = "s3"

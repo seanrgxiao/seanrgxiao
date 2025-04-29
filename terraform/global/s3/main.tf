@@ -77,8 +77,7 @@ data "aws_iam_policy_document" "allow_access_from_alb" {
       identifiers = ["${data.aws_caller_identity.current.account_id}"]
     }
     actions = [
-      "s3:*",
-      "s3:ListBucket"
+      "s3:*"
     ]
     resources = [
       aws_s3_bucket.alb_access_logs.arn,
@@ -96,7 +95,7 @@ resource "aws_iam_policy" "alb_s3_access_policy" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = "s3:*"  # 允许 ALB 读取对象
+        Action   = "s3:*"
         Resource = "arn:aws:s3:::${var.alb_bucket_name}/*"  # 允许访问存储桶中的所有对象
       }
     ]
@@ -120,7 +119,7 @@ resource "aws_iam_role" "alb_s3_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "alb_s3_policy_attachment" {
-  policy_arn = aws_iam_policy.alb_s3_log_policy.arn
+  policy_arn = aws_iam_policy.alb_s3_access_policy.arn
   role       = aws_iam_role.alb_s3_role.name
 }
 

@@ -80,7 +80,7 @@ resource "aws_lb" "example" {
   load_balancer_type = "application"
   subnets            = data.aws_subnets.default.ids
   security_groups    = [aws_security_group.alb.id]
-
+/*-*/
   access_logs {
     bucket  = var.s3_bucket_alb_log
     prefix  = "alb-logs"
