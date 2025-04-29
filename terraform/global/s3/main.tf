@@ -63,28 +63,81 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "default_alb_acces
     }
   }
 }
+
 data "aws_caller_identity" "current" {}
 
-resource "aws_s3_bucket_policy" "alb_access_logs_policy" {
-  bucket = aws_s3_bucket.alb_access_logs.bucket
-  policy = data.aws_iam_policy_document.allow_access_from_alb.json
-}
+# Set appropriate bucket ownership controls
+resource "aws_s3_bucket_ownership_controls" "alb_logs" {
+  bucket = aws_s3_bucket.alb_access_logs.name
 
-data "aws_iam_policy_document" "allow_access_from_alb" {
-  statement {
-    principals {
-      type = "AWS"
-      identifiers = ["${data.aws_caller_identity.current.account_id}"]
-    }
-    actions = [
-      "s3:*"
-    ]
-    resources = [
-      aws_s3_bucket.alb_access_logs.arn,
-      "${aws_s3_bucket.alb_access_logs.arn}/*",
-    ]
+  rule {
+    object_ownership = "BucketOwnerPreferred"
   }
 }
+
+# Create bucket policy to allow ALB to write logs
+resource "aws_s3_bucket_policy" "alb_logs" {
+  bucket = aws_s3_bucket.alb_access_logs.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        principal {
+          type = "AWS"
+          identifiers = ["${data.aws_caller_identity.current.account_id}"]
+        }
+        # Principal = {
+        #   AWS = "arn:aws:iam::${var.elb_account_ids[data.aws_region.current.name]}:root"
+        # }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.alb_access_logs.arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "delivery.logs.amazonaws.com"
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.alb_logs.arn}/*"
+        Condition = {
+          StringEquals = {
+            "s3:x-amz-acl" = "bucket-owner-full-control"
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logdelivery.elasticloadbalancing.amazonaws.com"
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.alb_logs.arn}/*"
+      }
+    ]
+  })
+}
+
+# resource "aws_s3_bucket_policy" "alb_access_logs_policy" {
+#   bucket = aws_s3_bucket.alb_access_logs.bucket
+#   policy = data.aws_iam_policy_document.allow_access_from_alb.json
+# }
+
+# data "aws_iam_policy_document" "allow_access_from_alb" {
+#   statement {
+#     principals {
+#       type = "AWS"
+#       identifiers = ["${data.aws_caller_identity.current.account_id}"]
+#     }
+#     actions = [
+#       "s3:*"
+#     ]
+#     resources = [
+#       aws_s3_bucket.alb_access_logs.arn,
+#       "${aws_s3_bucket.alb_access_logs.arn}/*",
+#     ]
+#   }
+# }
 
 resource "aws_iam_policy" "alb_s3_access_policy" {
   name        = "ALBS3AccessPolicy"
