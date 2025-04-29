@@ -87,9 +87,9 @@ resource "aws_s3_bucket_policy" "alb_logs" {
         #   type = "AWS"
         #   identifiers = ["${data.aws_caller_identity.current.account_id}"]
         # }
-        # Principal = {
-        #   AWS = "arn:aws:iam::${var.elb_account_ids[data.aws_region.current.name]}:root"
-        # }
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
         Action   = "s3:PutObject"
         Resource = "${aws_s3_bucket.alb_access_logs.arn}/*"
       },
