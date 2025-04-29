@@ -53,14 +53,9 @@ resource "aws_security_group" "instance" {
     from_port   = var.server_port
     to_port     = var.server_port
     protocol    = local.tcp_protocol
-    cidr_blocks = local.all_ips
+    # cidr_blocks = local.all_ips
+    security_groups = [aws_security_group.alb.id]
   }
-  ingress {
-    from_port   = local.http_port
-    to_port     = local.http_port
-    protocol    = local.tcp_protocol
-    cidr_blocks = local.all_ips
-  }  
 }
 resource "aws_security_group" "alb" {
   name = "${var.cluster_name}-sg-alb"
