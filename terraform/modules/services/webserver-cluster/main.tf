@@ -62,8 +62,8 @@ resource "aws_security_group" "instance" {
     security_groups = [aws_security_group.alb.id]
   }
   egress {
-    from_port   = local.any_port
-    to_port     = local.any_port
+    from_port   = 0
+    to_port     = 65535
     protocol    = local.tcp_protocol
     cidr_blocks = local.all_ips
   }  
@@ -86,8 +86,8 @@ resource "aws_security_group" "alb" {
   }
   # Allow all outbound requests
   egress {
-    from_port   = local.any_port
-    to_port     = local.any_port
+    from_port   = 0
+    to_port     = 65535
     protocol    = local.tcp_protocol
     cidr_blocks = local.all_ips
   }
