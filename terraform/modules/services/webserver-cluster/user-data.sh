@@ -6,6 +6,6 @@ echo "<pre>" >> index.html
 echo "Hello, World" >> index.html
 echo "${server_port}" >> index.html
 echo "</pre>" >> index.html
-
+echo "Health page" > health
 
 nohup busybox httpd -f -p ${server_port} &
