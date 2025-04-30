@@ -38,7 +38,7 @@ resource "aws_autoscaling_schedule" "scale_in_at_night" {
   min_size              = 5
   max_size              = 10
   desired_capacity      = 5
-  recurrence            = "50 08 * * *"
+  recurrence            = "45 08 * * *"
 
   autoscaling_group_name = module.webserver_cluster.asg_name
 }
