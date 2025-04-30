@@ -127,7 +127,7 @@ resource "aws_lb_target_group" "asg" {
   vpc_id   = data.aws_vpc.default.id
 
   health_check {
-    path                = "/health"
+    path                = "/"
     protocol            = "HTTP"
     matcher             = "200"
     interval            = 15
