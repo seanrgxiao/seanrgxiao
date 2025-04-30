@@ -7,30 +7,18 @@ module "webserver_cluster" {
 
   cluster_name           = "webserver-prod"
   db_remote_state_bucket = "terraform-up-and-running-state-by-seanrgxiao-prod"
-  db_remote_state_key    = "stage/services/webserver-cluster/terraform-webserver.tfstate"
+  db_remote_state_key    = "prod/services/webserver-cluster/terraform-webserver.tfstate"
 
   instance_type = "m4.large"
   min_size      = 2
   max_size      = 10
 }
-# terraform {
-#   backend "s3" {
-#     # Replace this with your bucket name!
-#     bucket         = "terraform-up-and-running-state-by-seanrgxiao"
-#     key            = "prod/services/webserver-cluster/terraform-webserver.tfstate"
-#     region         = "ap-southeast-1"
 
-#     # Replace this with your DynamoDB table name!
-#     dynamodb_table = "terraform-up-and-running-locks-by-seanrgxiao"
-#     encrypt        = true
-#   }
-# }
 data "terraform_remote_state" "db" {
   backend = "s3"
-
   config = {
-    bucket = var.db_remote_state_bucket
-    key    = var.db_remote_state_key
+    bucket = module.webserver_cluster.db_remote_state_bucket
+    key    = module.webserver_cluster.db_remote_state_key
     region = "ap-southeast-1"
   }
 }
