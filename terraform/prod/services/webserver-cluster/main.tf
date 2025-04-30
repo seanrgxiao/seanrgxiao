@@ -12,8 +12,8 @@ module "webserver_cluster" {
   instance_type = "m4.large"
   min_size      = 2
   max_size      = 10
+  s3_bucket_alb_log = "alb-access-logs-seanrgxiao"
 }
-
 data "terraform_remote_state" "db" {
   backend = "s3"
   config = {
