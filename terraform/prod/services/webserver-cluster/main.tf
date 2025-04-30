@@ -18,18 +18,18 @@ resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
   scheduled_action_name = "scale-out-during-business-hours"
   min_size              = 2
   max_size              = 10
-  desired_capacity      = 2
-  recurrence            = "40 08 * * *"
+  desired_capacity      = 5
+  recurrence            = "25 09 * * *"
 
-  autoscaling_group_name = module.webserver_cluster.asg_name
+  autoscaling_group_name = module.webserver_cluster.aws_autoscaling_group.example.name
 }
 
 resource "aws_autoscaling_schedule" "scale_in_at_night" {
   scheduled_action_name = "scale-in-at-night"
-  min_size              = 5
+  min_size              = 6
   max_size              = 10
-  desired_capacity      = 5
-  recurrence            = "45 08 * * *"
+  desired_capacity      = 7
+  recurrence            = "35 09 * * *"
 
-  autoscaling_group_name = module.webserver_cluster.asg_name
+  autoscaling_group_name = module.webserver_cluster.aws_autoscaling_group.example.name
 }
