@@ -22,7 +22,13 @@ data "terraform_remote_state" "db" {
     region = "ap-southeast-1"
   }
 }
-
+terraform {
+  backend "s3" {
+    bucket = "terraform-up-and-running-state-by-seanrgxiao"
+    key    = "prod/services/webserver-cluster/terraform-webserver.tfstate"
+    region = "ap-southeast-1"
+  }
+}
 resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
   scheduled_action_name = "scale-out-during-business-hours"
   min_size              = 2
