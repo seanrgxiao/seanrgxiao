@@ -14,15 +14,6 @@ module "webserver_cluster" {
   max_size      = 10
   s3_bucket_alb_log = "alb-access-logs-seanrgxiao"
 }
-# data "terraform_remote_state" "db" {
-#   backend = "s3"
-#   config = {
-#     bucket = module.webserver_cluster.db_remote_state_bucket
-#     key    = module.webserver_cluster.db_remote_state_key
-#     region = "ap-southeast-1"
-#   }
-# }
-
 resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
   scheduled_action_name = "scale-out-during-business-hours"
   min_size              = 2
