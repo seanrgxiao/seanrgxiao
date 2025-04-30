@@ -28,7 +28,7 @@ resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
   min_size              = 2
   max_size              = 10
   desired_capacity      = 2
-  recurrence            = "30 16 * * *"
+  recurrence            = "40 16 * * *"
 
   autoscaling_group_name = module.webserver_cluster.asg_name
 }
