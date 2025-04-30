@@ -39,7 +39,7 @@ variable "s3_bucket_alb_log" {
 }
 locals {
   http_port    = 80
-  any_port     = 0
+  any_port     = "0-65535"
   any_protocol = "-1"
   tcp_protocol = "tcp"
   all_ips      = ["0.0.0.0/0"]
