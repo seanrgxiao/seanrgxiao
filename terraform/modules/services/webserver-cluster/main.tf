@@ -42,7 +42,7 @@ resource "aws_autoscaling_group" "example" {
   }
 }
 resource "aws_security_group" "instance" {
-  name = "${var.cluster_name}-sg"
+  name = var.alb_name
   ingress {
     from_port   = 22
     to_port     = 22
@@ -93,7 +93,7 @@ resource "aws_security_group" "alb" {
   }
 }
 resource "aws_lb" "example" {
-  name               = "${var.cluster_name}-asg-example"
+  name               = var.alb_name
   load_balancer_type = "application"
   subnets            = data.aws_subnets.default.ids
   security_groups    = [aws_security_group.alb.id]
