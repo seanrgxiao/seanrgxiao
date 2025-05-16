@@ -11,7 +11,7 @@ provider "kubernetes" {
 resource "null_resource" "list_nodes" {
   provisioner "remote-exec" {
     inline = [
-      "kubectl get nodes"  # 在远程服务器上执行 kubectl 命令
+      "/usr/local/bin/kubectl get nodes"  # 在远程服务器上执行 kubectl 命令
     ]
     
     connection {
