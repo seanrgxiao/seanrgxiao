@@ -198,10 +198,10 @@ resource "aws_eks_node_group" "eks_node_group" {
     aws_iam_role_policy_attachment.ec2_container_registry_read_only
   ]
 }
-resource "null_resource" "execute_command" {
-  provisioner "local-exec" {
-    command = "kubectl get nodes"
-  }
+# resource "null_resource" "execute_command" {
+#   provisioner "local-exec" {
+#     command = "kubectl get nodes"
+#   }
 
-  depends_on = [aws_eks_cluster.eks_cluster]
-}
+#   depends_on = [aws_eks_cluster.eks_cluster]
+# }
