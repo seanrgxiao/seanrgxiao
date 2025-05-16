@@ -29,7 +29,7 @@ data "aws_subnets" "default" {
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  owners      = ["124355682867"] # Canonical
 
   filter {
     name   = "name"
