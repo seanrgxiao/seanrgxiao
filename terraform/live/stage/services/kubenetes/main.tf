@@ -9,8 +9,17 @@ provider "kubernetes" {
 }
 
 resource "null_resource" "list_nodes" {
-  provisioner "local-exec" {
-    command = "kubectl get nodes"
+  provisioner "remote-exec" {
+    inline = [
+      "kubectl get nodes"  # 在远程服务器上执行 kubectl 命令
+    ]
+    
+    connection {
+      type        = "ssh"
+      host        = "18.142.186.10"  # EC2 实例 IP
+      user        = "ec2-user"
+      private_key = file("id_rsa.pem")  # SSH 私钥路径
+    }
   }
 }
 
