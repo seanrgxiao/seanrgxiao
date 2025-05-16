@@ -191,5 +191,5 @@ resource "null_resource" "execute_command" {
     command = "kubectl get nodes"
   }
 
-  depends_on = [aws_eks_cluster.example]
+  depends_on = [aws_eks_cluster.eks_cluster]
 }
