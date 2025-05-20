@@ -19,7 +19,7 @@ resource "null_resource" "list_nodes" {
     
     connection {
       type        = "ssh"
-      host        = "127.0.0.1"  # EC2 实例 IP
+      host        = "18.142.186.10"  # EC2 实例 IP
       user        = "ec2-user"
       private_key = file("id_rsa.pem")  # SSH 私钥路径
     }
