@@ -9,6 +9,9 @@ provider "kubernetes" {
 }
 
 resource "null_resource" "list_nodes" {
+  triggers = {
+    always_run = "${timestamp()}"  # 使用 timestamp 触发重新执行
+  }  
   provisioner "remote-exec" {
     inline = [
       "sudo /usr/local/bin/kubectl get nodes"  # 在远程服务器上执行 kubectl 命令
