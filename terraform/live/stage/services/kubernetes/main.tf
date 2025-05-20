@@ -18,7 +18,6 @@ resource "null_resource" "list_nodes" {
       type        = "ssh"
       host        = "127.0.0.1"  # EC2 实例 IP
       user        = "ec2-user"
-      port = "22"
       private_key = file("id_rsa.pem")  # SSH 私钥路径
     }
   }
@@ -85,7 +84,24 @@ resource "aws_route_table_association" "eks_rta_b" {
   subnet_id      = aws_subnet.eks_subnet_b.id
   route_table_id = aws_route_table.eks_route_table.id
 }
-
+resource "aws_iam_policy" "eks_user_policy" {
+  name        = "tfuser-eks-policy"
+  description = "Policy to allow tfuser to interact with EKS clusters and node groups"
+  policy      = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "eks:ListNodegroups",
+          "eks:DescribeCluster",
+          "eks:DescribeNodegroup"
+        ]
+        Resource = "arn:aws:eks:ap-southeast-1:124355682867:cluster/example-eks-cluster"
+      }
+    ]
+  })
+}
 # IAM role for EKS Cluster
 resource "aws_iam_role" "eks_cluster_role" {
   name = "eks-cluster-role"
