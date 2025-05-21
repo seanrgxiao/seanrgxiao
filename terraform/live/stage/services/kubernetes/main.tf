@@ -14,7 +14,7 @@ resource "null_resource" "list_nodes" {
   }
   provisioner "remote-exec" {
     inline = [
-      "sudo /usr/local/bin/kubectl get nodes"，  # 在远程服务器上执行 kubectl 命令
+      "sudo /usr/local/bin/kubectl get nodes",  # 在远程服务器上执行 kubectl 命令
       "sudo /usr/local/bin/kubectl get namespaces",
       "sudo /usr/local/bin/kubectl cluster-info"
     ]
