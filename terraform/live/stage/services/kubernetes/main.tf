@@ -8,25 +8,25 @@ provider "kubernetes" {
   token                  = "k8s-aws-v1.aHR0cHM6Ly9zdHMuYXAtc291dGhlYXN0LTEuYW1hem9uYXdzLmNvbS8_QWN0aW9uPUdldENhbGxlcklkZW50aXR5JlZlcnNpb249MjAxMS0wNi0xNSZYLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFSWjVCTkVJWlNXQ01OT0daJTJGMjAyNTA1MjYlMkZhcC1zb3V0aGVhc3QtMSUyRnN0cyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNTI2VDA3NTUzM1omWC1BbXotRXhwaXJlcz02MCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QlM0J4LWs4cy1hd3MtaWQmWC1BbXotU2lnbmF0dXJlPWYxYWY1NDRiZjNiNzM3YThmMDI4ZTg5YTk3MjBmMzg1ODgzYWMwMjlhODk1ZDBjNjM5NGQzMDMwZDQ3NTYzMjM"  # 从 AWS CLI 获取的认证令牌
 }
 
-resource "null_resource" "list_nodes" {
-  triggers = {
-    always_run = "${timestamp()}"  # 使用 timestamp 触发重新执行
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "sudo /usr/local/bin/kubectl get nodes",  # 在远程服务器上执行 kubectl 命令
-      "sudo /usr/local/bin/kubectl get namespaces",
-      "sudo /usr/local/bin/kubectl cluster-info"
-    ]
+# resource "null_resource" "list_nodes" {
+#   triggers = {
+#     always_run = "${timestamp()}"  # 使用 timestamp 触发重新执行
+#   }
+#   provisioner "remote-exec" {
+#     inline = [
+#       "sudo /usr/local/bin/kubectl get nodes",  # 在远程服务器上执行 kubectl 命令
+#       "sudo /usr/local/bin/kubectl get namespaces",
+#       "sudo /usr/local/bin/kubectl cluster-info"
+#     ]
     
-    connection {
-      type        = "ssh"
-      host        = "18.142.186.10"  # EC2 实例 IP
-      user        = "ec2-user"
-      private_key = file("id_rsa.pem")  # SSH 私钥路径
-    }
-  }
-}
+#     connection {
+#       type        = "ssh"
+#       host        = "18.142.186.10"  # EC2 实例 IP
+#       user        = "ec2-user"
+#       private_key = file("id_rsa.pem")  # SSH 私钥路径
+#     }
+#   }
+# }
 
 # VPC
 resource "aws_vpc" "eks_vpc" {
