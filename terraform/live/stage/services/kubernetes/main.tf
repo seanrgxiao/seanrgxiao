@@ -90,7 +90,7 @@ resource "aws_route_table_association" "eks_rta_b" {
   route_table_id = aws_route_table.eks_route_table.id
 }
 resource "aws_iam_policy" "eks_user_policy" {
-  name        = "tfuser-eks-policy"
+  name        = "tfuser-eks-policy-v2"
   description = "Policy to allow tfuser to interact with EKS clusters and node groups"
   policy      = jsonencode({
     Version = "2012-10-17"
@@ -112,7 +112,7 @@ resource "aws_iam_policy" "eks_user_policy" {
 }
 # IAM role for EKS Cluster
 resource "aws_iam_role" "eks_cluster_role" {
-  name = "eks-cluster-role"
+  name = "eks-cluster-role-v2"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -141,7 +141,7 @@ resource "aws_iam_role_policy_attachment" "eks_service_policy" {
 
 # IAM role for EKS Worker Nodes
 resource "aws_iam_role" "eks_node_role" {
-  name = "eks-node-role"
+  name = "eks-node-role-v2"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
