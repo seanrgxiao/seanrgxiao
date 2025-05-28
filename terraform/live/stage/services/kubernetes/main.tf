@@ -106,9 +106,9 @@ resource "aws_iam_policy" "eks_user_policy" {
       }
     ]
   })
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 # IAM role for EKS Cluster
 resource "aws_iam_role" "eks_cluster_role" {
@@ -124,9 +124,9 @@ resource "aws_iam_role" "eks_cluster_role" {
       Action = "sts:AssumeRole"
     }]
   })
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
@@ -153,9 +153,9 @@ resource "aws_iam_role" "eks_node_role" {
       Action = "sts:AssumeRole"
     }]
   })
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
