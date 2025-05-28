@@ -2,7 +2,7 @@ terraform {
   cloud {
     organization = "batangas"
     workspaces {
-      name = "k8s"
+      name = "kube"
     }
   }
   
