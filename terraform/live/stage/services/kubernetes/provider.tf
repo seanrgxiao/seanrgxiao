@@ -1,10 +1,10 @@
-# terraform {
-#   cloud {
-#     organization = "batangas"
-#     workspaces {
-#       name = "k8s"
-#     }
-#   }
+terraform {
+  cloud {
+    organization = "batangas"
+    workspaces {
+      name = "k8s"
+    }
+  }
   
 #   required_version = ">= 1.1.0"
   
@@ -14,4 +14,4 @@
 #       version = "3.3.2"
 #     }
 #   }
-# }
+}
