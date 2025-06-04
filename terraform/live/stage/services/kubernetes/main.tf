@@ -131,7 +131,7 @@ resource "aws_iam_role" "eks_cluster_role" {
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   role       = aws_iam_role.eks_cluster_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"  # Changed from AmazonEKS_CNI_Policy
 }
 
 resource "aws_iam_role_policy_attachment" "eks_service_policy" {
@@ -230,7 +230,7 @@ resource "aws_eks_node_group" "eks_node_group" {
   }
 
   ami_type       = "AL2_x86_64"
-  instance_types = ["t3.medium"]
+  instance_types = ["t3.large"]
 
   depends_on = [
     aws_iam_role_policy_attachment.eks_worker_node_policy,
