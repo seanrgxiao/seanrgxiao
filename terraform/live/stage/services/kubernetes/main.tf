@@ -1,255 +1,243 @@
-# main.tf
-
 terraform {
-  required_version = ">= 1.6.0" # 2025 年推荐版本
+  required_version = ">= 1.5.0"
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.20.0" # 2025 年 AWS provider 版本
+      version = ">= 5.0.0"        # 假设 2025 年 AWS Provider 已升级到 5.x 版本
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.25.0"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.12.0"
+      version = ">= 2.0.0"
     }
   }
 
   # backend "s3" {
-  #   bucket         = "my-eks-tfstate-2025"
-  #   key            = "global/eks-cluster/terraform.tfstate"
-  #   region         = "us-west-2"
+  #   bucket         = "your-terraform-state-bucket"   # 替换为你的 S3 状态桶
+  #   key            = "eks/terraform.tfstate"
+  #   region         = "ap-southeast-1"
+  #   dynamodb_table = "terraform-lock-table"          # 用于状态锁定的 DynamoDB 表
   #   encrypt        = true
-  #   dynamodb_table = "terraform-locks"
   # }
 }
 
+# provider.tf
+
+# 指定 AWS Provider，默认使用变量 aws_region
 provider "aws" {
   region = var.aws_region
-
-  default_tags {
-    tags = {
-      Environment = var.environment
-      Terraform   = "true"
-      Project     = "eks-cluster-2025"
-    }
-  }
 }
 
-# VPC 模块
+# 额外声明一个可选的 AWS provider别名，例如用于其他区域的资源
+provider "aws" {
+  # alias  = ""
+  region = "ap-southeast-1"
+}
+
+# Kubernetes Provider，后续用于管理 EKS 上的 Kubernetes 资源（如果需要）
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
+}
+# vpc.tf
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.5.0" # 2025 年 VPC 模块版本
+  version = "5.0.0"  # 假设 2025 年模块版本为 5.x
 
-  name = "${var.cluster_name}-vpc"
-  cidr = var.vpc_cidr
-
-  azs             = slice(data.aws_availability_zones.available.names, 0, 3)
-  private_subnets = var.private_subnets
-  public_subnets  = var.public_subnets
+  name                 = "${var.cluster_name}-vpc"
+  cidr                 = var.vpc_cidr
+  azs                  = slice(data.aws_availability_zones.available.names, 0, length(var.public_subnets_cidrs))
+  private_subnets      = var.private_subnets_cidrs
+  public_subnets       = var.public_subnets_cidrs
 
   enable_nat_gateway   = true
   single_nat_gateway   = true
-  enable_dns_hostnames = true
-
-  public_subnet_tags = {
-    "kubernetes.io/role/elb" = "1"
-  }
-
-  private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = "1"
-    "karpenter.sh/discovery"          = var.cluster_name
-  }
 
   tags = {
-    Terraform   = "true"
-    Environment = var.environment
+    "Name"        = "${var.cluster_name}-vpc"
+    "Environment" = "dev"  # 按需修改
   }
 }
 
-# EKS 集群模块
+# 获取可用区列表，用于给 VPC 模块配置 AZs
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+# iam.tf
+
+# 1. 创建 EKS 控制平面角色 (Cluster IAM Role)
+resource "aws_iam_role" "eks_cluster_role" {
+  name               = "${var.cluster_name}-eks-cluster-role"
+  assume_role_policy = data.aws_iam_policy_document.eks_cluster_assume_role_policy.json
+  tags = {
+    "Name"        = "${var.cluster_name}-eks-cluster-role"
+    "Environment" = "dev"
+  }
+}
+
+data "aws_iam_policy_document" "eks_cluster_assume_role_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+  }
+}
+
+# 附加 AmazonEKSClusterPolicy, AmazonEKSServicePolicy
+resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSClusterPolicy" {
+  role       = aws_iam_role.eks_cluster_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSServicePolicy" {
+  role       = aws_iam_role.eks_cluster_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+}
+
+# 2. 创建 EKS Node Group Role (Worker IAM Role)
+resource "aws_iam_role" "eks_nodegroup_role" {
+  name               = "${var.cluster_name}-eks-nodegroup-role"
+  assume_role_policy = data.aws_iam_policy_document.eks_nodegroup_assume_role_policy.json
+  tags = {
+    "Name"        = "${var.cluster_name}-eks-nodegroup-role"
+    "Environment" = "dev"
+  }
+}
+
+data "aws_iam_policy_document" "eks_nodegroup_assume_role_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    # EKS 托管节点组会使用此角色
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+# 附加 AmazonEKSWorkerNodePolicy, AmazonEC2ContainerRegistryReadOnly, AmazonEKS_CNI_Policy
+resource "aws_iam_role_policy_attachment" "eks_ng_AmazonEKSWorkerNodePolicy" {
+  role       = aws_iam_role.eks_nodegroup_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_ng_AmazonECRReadOnly" {
+  role       = aws_iam_role.eks_nodegroup_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_ng_AmazonEKS_CNI_Policy" {
+  role       = aws_iam_role.eks_nodegroup_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+# eks-cluster.tf
+
 module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "20.0.0" # 2025 年 EKS 模块版本
+  source          = "terraform-aws-modules/eks/aws"
+  version         = "24.0.0"  # 假设 2025 年版本
+  cluster_name    = var.cluster_name
+  cluster_version = var.cluster_version
 
-  cluster_name                   = var.cluster_name
-  cluster_version                = "1.29" # 2025 年 Kubernetes 稳定版本
-  cluster_endpoint_public_access = true
-
+  # VPC 相关
   vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids = module.vpc.private_subnets  # EKS 控制平面和节点都放在私有子网里
 
-  eks_managed_node_groups = {
-    initial = {
-      instance_types = ["m6i.large"]
-      min_size       = 1
-      max_size       = 3
-      desired_size   = 2
+  # 控制平面安全组入站规则（可以根据实际需求进行细化）
+  cluster_security_group_ingress = var.eks_control_plane_security_group_rules
 
-      iam_role_additional_policies = {
-        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  # EKS 控制平面角色
+  cluster_iam_role_name = aws_iam_role.eks_cluster_role.name
+
+  # Worker 节点组配置
+  node_groups = {
+    managed_node_group = {
+      # 为此托管 Node Group 明确指定 IAM Role
+      node_role_arn = aws_iam_role.eks_nodegroup_role.arn
+
+      # 节点组名称，会被 AWS 控制台显示
+      name = "${var.cluster_name}-mng"
+
+      # 实例类型、容量等
+      instance_types = [var.node_group_instance_type]
+      desired_capacity = var.node_group_desired_capacity
+      min_capacity     = var.node_group_min_capacity
+      max_capacity     = var.node_group_max_capacity
+
+      # 子网 ID（使用私有子网）
+      subnet_ids = module.vpc.private_subnets
+
+      # 为节点打标签
+      labels = merge(
+        {
+          "eks_cluster" = var.cluster_name
+          "purpose"     = "production"
+        },
+        var.node_group_labels
+      )
+
+      # 可选：为节点打 Taints
+      taints = var.node_group_taints
+
+      # 节点组自动更新、自动修复设置
+      launch_template = {
+        # 如果需要使用自定义 AMI，可以在这里声明。若无需求，此部分可以删除。
+        # id      = aws_launch_template.my_custom_ami.id
+        # version = "$$Latest"
       }
+
+      key_name = var.ssh_key_name  # 如果希望通过 SSH 登录节点，需提前创建 KeyPair
     }
   }
 
-  cluster_addons = {
-    coredns = {
-      most_recent = true
+  # OIDC Provider：用于 IRSA（IAM Roles for Service Accounts），建议启用
+  manage_aws_auth = true
+  map_roles = [
+    {
+      rolearn  = aws_iam_role.eks_nodegroup_role.arn
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups   = ["system:bootstrappers", "system:nodes"]
     }
-    kube-proxy = {
-      most_recent = true
+  ]
+
+  # 启用 IRSA（IAM Roles for Service Accounts）
+  enable_irsa = true
+
+  # 让模块为我们自动创建 Service Account 的 IAM 角色
+  create_oidc_provider = true
+
+  # 哪些 Kubernetes addon 需要启用，可以按需配置
+  create_eks_managed_node_groups = true
+
+  # Kubernetes Dashboard、VPC CNI 等常用 addon
+  enable_irsa_addon = true
+  addons = [
+    {
+      name    = "vpc-cni"
+      version = "v1.12.0"  # 示例版本
+    },
+    {
+      name    = "kube-proxy"
+      version = "v1.27.3-eksbuild.1"
+    },
+    {
+      name    = "coredns"
+      version = "1.12.0-eksbuild.1"
     }
-    vpc-cni = {
-      most_recent = true
-    }
-    aws-ebs-csi-driver = {
-      most_recent = true
-    }
-  }
+  ]
 
   tags = {
-    Environment = var.environment
-    Terraform   = "true"
+    "Environment" = "dev"
+    "Owner"       = "team-xyz"
   }
 }
 
-# Karpenter 自动扩缩容
-module "karpenter" {
-  source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "20.0.0"
-
-  cluster_name           = module.eks.cluster_name
-  irsa_oidc_provider_arn = module.eks.oidc_provider_arn
-
-  node_iam_role_additional_policies = {
-    AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  }
-
-  tags = {
-    Environment = var.environment
-  }
-}
-
-resource "helm_release" "karpenter" {
-  namespace        = "karpenter"
-  create_namespace = true
-
-  name       = "karpenter"
-  repository = "oci://public.ecr.aws/karpenter"
-  chart      = "karpenter"
-  version    = "0.35.0" # 2025 年 Karpenter 版本
-
-  set {
-    name  = "settings.aws.clusterName"
-    value = module.eks.cluster_name
-  }
-
-  set {
-    name  = "settings.aws.clusterEndpoint"
-    value = module.eks.cluster_endpoint
-  }
-
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-    value = module.karpenter.irsa_arn
-  }
-
-  set {
-    name  = "settings.aws.defaultInstanceProfile"
-    value = module.karpenter.instance_profile_name
-  }
-
-  set {
-    name  = "settings.aws.interruptionQueueName"
-    value = module.karpenter.queue_name
-  }
-
-  depends_on = [module.eks]
-}
-
-# AWS Load Balancer Controller
-module "lb_controller" {
-  source  = "terraform-aws-modules/eks/aws//modules/load-balancer-controller"
-  version = "20.0.0"
-
-  cluster_name           = module.eks.cluster_name
-  irsa_oidc_provider_arn = module.eks.oidc_provider_arn
-
-  tags = {
-    Environment = var.environment
-  }
-}
-
-# Karpenter Provisioner
-resource "kubectl_manifest" "karpenter_provisioner" {
-  yaml_body = <<-YAML
-    apiVersion: karpenter.sh/v1beta1
-    kind: NodePool
-    metadata:
-      name: default
-    spec:
-      template:
-        spec:
-          requirements:
-            - key: "karpenter.k8s.aws/instance-category"
-              operator: In
-              values: ["m", "c", "r"]
-            - key: "karpenter.k8s.aws/instance-generation"
-              operator: Gt
-              values: ["5"] # 2025 年推荐第 6 代及以上实例
-            - key: "kubernetes.io/arch"
-              operator: In
-              values: ["amd64", "arm64"]
-          nodeClassRef:
-            name: default
-          taints:
-            - key: "example.com/special-taint-2025"
-              value: "true"
-              effect: "NoSchedule"
-      limits:
-        cpu: 1000
-      disruption:
-        consolidationPolicy: WhenUnderutilized
-        expireAfter: 720h # 30 天
-  YAML
-
-  depends_on = [helm_release.karpenter]
-}
-
-resource "kubectl_manifest" "karpenter_node_class" {
-  yaml_body = <<-YAML
-    apiVersion: karpenter.k8s.aws/v1beta1
-    kind: EC2NodeClass
-    metadata:
-      name: default
-    spec:
-      amiFamily: AL2023 # 2025 年 Amazon Linux 版本
-      role: "${module.karpenter.role_name}"
-      subnetSelectorTerms:
-        - tags:
-            karpenter.sh/discovery: "${module.eks.cluster_name}"
-      securityGroupSelectorTerms:
-        - tags:
-            "kubernetes.io/cluster/${module.eks.cluster_name}": "owned"
-      tags:
-        Environment: "${var.environment}"
-        NodeClass: "default-2025"
-      metadataOptions:
-        httpEndpoint: "enabled"
-        httpProtocolIPv6: "enabled" # 2025 年 IPv6 支持
-        httpPutResponseHopLimit: 2
-        httpTokens: "required"
-      blockDeviceMappings:
-        - deviceName: /dev/xvda
-          ebs:
-            volumeSize: "100Gi"
-            volumeType: "gp3"
-            encrypted: true
-            deleteOnTermination: true
-  YAML
-
-  depends_on = [helm_release.karpenter]
+# 在 EKS 集群创建完成后，获取 Auth Token
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_id
 }
