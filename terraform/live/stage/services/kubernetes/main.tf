@@ -1,12 +1,12 @@
 # main.tf
 
 terraform {
-  required_version = ">= 1.6.0" # 2025年推荐版本
+  required_version = ">= 1.6.0" # 2025 年推荐版本
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.20.0" # 2025年AWS provider版本
+      version = "~> 5.20.0" # 2025 年 AWS provider 版本
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -18,13 +18,13 @@ terraform {
     }
   }
 
-  backend "s3" {
-    bucket         = "my-eks-tfstate-2025"
-    key            = "global/eks-cluster/terraform.tfstate"
-    region         = "us-west-2"
-    encrypt        = true
-    dynamodb_table = "terraform-locks"
-  }
+  # backend "s3" {
+  #   bucket         = "my-eks-tfstate-2025"
+  #   key            = "global/eks-cluster/terraform.tfstate"
+  #   region         = "us-west-2"
+  #   encrypt        = true
+  #   dynamodb_table = "terraform-locks"
+  # }
 }
 
 provider "aws" {
@@ -39,10 +39,10 @@ provider "aws" {
   }
 }
 
-# 创建VPC模块
+# VPC 模块
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.5.0" # 2025年VPC模块版本
+  version = "5.5.0" # 2025 年 VPC 模块版本
 
   name = "${var.cluster_name}-vpc"
   cidr = var.vpc_cidr
@@ -70,26 +70,24 @@ module "vpc" {
   }
 }
 
-# EKS集群模块
+# EKS 集群模块
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.0.0" # 2025年EKS模块版本
+  version = "20.0.0" # 2025 年 EKS 模块版本
 
   cluster_name                   = var.cluster_name
-  cluster_version                = "1.29" # 2025年K8s稳定版本
+  cluster_version                = "1.29" # 2025 年 Kubernetes 稳定版本
   cluster_endpoint_public_access = true
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
-  # 2025年推荐使用Karpenter而不是节点组
   eks_managed_node_groups = {
     initial = {
       instance_types = ["m6i.large"]
-
-      min_size     = 1
-      max_size     = 3
-      desired_size = 2
+      min_size       = 1
+      max_size       = 3
+      desired_size   = 2
 
       iam_role_additional_policies = {
         AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
@@ -97,7 +95,6 @@ module "eks" {
     }
   }
 
-  # 启用核心EKS插件
   cluster_addons = {
     coredns = {
       most_recent = true
@@ -119,7 +116,7 @@ module "eks" {
   }
 }
 
-# Karpenter自动扩缩容
+# Karpenter 自动扩缩容
 module "karpenter" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
   version = "20.0.0"
@@ -127,7 +124,6 @@ module "karpenter" {
   cluster_name           = module.eks.cluster_name
   irsa_oidc_provider_arn = module.eks.oidc_provider_arn
 
-  # 2025年推荐的Karpenter配置
   node_iam_role_additional_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
@@ -144,7 +140,7 @@ resource "helm_release" "karpenter" {
   name       = "karpenter"
   repository = "oci://public.ecr.aws/karpenter"
   chart      = "karpenter"
-  version    = "0.35.0" # 2025年Karpenter版本
+  version    = "0.35.0" # 2025 年 Karpenter 版本
 
   set {
     name  = "settings.aws.clusterName"
@@ -187,7 +183,7 @@ module "lb_controller" {
   }
 }
 
-# 创建Karpenter Provisioner (2025年推荐配置)
+# Karpenter Provisioner
 resource "kubectl_manifest" "karpenter_provisioner" {
   yaml_body = <<-YAML
     apiVersion: karpenter.sh/v1beta1
@@ -203,7 +199,7 @@ resource "kubectl_manifest" "karpenter_provisioner" {
               values: ["m", "c", "r"]
             - key: "karpenter.k8s.aws/instance-generation"
               operator: Gt
-              values: ["5"] # 2025年推荐使用第6代及以上实例
+              values: ["5"] # 2025 年推荐第 6 代及以上实例
             - key: "kubernetes.io/arch"
               operator: In
               values: ["amd64", "arm64"]
@@ -213,20 +209,14 @@ resource "kubectl_manifest" "karpenter_provisioner" {
             - key: "example.com/special-taint-2025"
               value: "true"
               effect: "NoSchedule"
-          startupTaints:
-            - key: "example.com/startup-taint-2025"
-              value: "true"
-              effect: "NoSchedule"
       limits:
         cpu: 1000
       disruption:
         consolidationPolicy: WhenUnderutilized
-        expireAfter: 720h # 30天
+        expireAfter: 720h # 30 天
   YAML
 
-  depends_on = [
-    helm_release.karpenter
-  ]
+  depends_on = [helm_release.karpenter]
 }
 
 resource "kubectl_manifest" "karpenter_node_class" {
@@ -236,100 +226,30 @@ resource "kubectl_manifest" "karpenter_node_class" {
     metadata:
       name: default
     spec:
-      amiFamily: AL2023 # 2025年Amazon Linux版本
+      amiFamily: AL2023 # 2025 年 Amazon Linux 版本
       role: "${module.karpenter.role_name}"
       subnetSelectorTerms:
         - tags:
             karpenter.sh/discovery: "${module.eks.cluster_name}"
       securityGroupSelectorTerms:
         - tags:
-            "kubernetes.io/cluster/${module.eks.cluster_name}": owned
+            "kubernetes.io/cluster/${module.eks.cluster_name}": "owned"
       tags:
         Environment: "${var.environment}"
         NodeClass: "default-2025"
       metadataOptions:
-        httpEndpoint: enabled
-        httpProtocolIPv6: enabled # 2025年IPv6支持
+        httpEndpoint: "enabled"
+        httpProtocolIPv6: "enabled" # 2025 年 IPv6 支持
         httpPutResponseHopLimit: 2
-        httpTokens: required
+        httpTokens: "required"
       blockDeviceMappings:
         - deviceName: /dev/xvda
           ebs:
-            volumeSize: 100Gi
-            volumeType: gp3
+            volumeSize: "100Gi"
+            volumeType: "gp3"
             encrypted: true
             deleteOnTermination: true
   YAML
 
-  depends_on = [
-    helm_release.karpenter
-  ]
-}
-
-# variables.tf
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-  default     = "us-west-2"
-}
-
-variable "cluster_name" {
-  description = "EKS cluster name"
-  type        = string
-  default     = "eks-cluster-2025"
-}
-
-variable "environment" {
-  description = "Environment name"
-  type        = string
-  default     = "production"
-}
-
-variable "vpc_cidr" {
-  description = "VPC CIDR block"
-  type        = string
-  default     = "10.0.0.0/16"
-}
-
-variable "private_subnets" {
-  description = "Private subnets CIDR blocks"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-}
-
-variable "public_subnets" {
-  description = "Public subnets CIDR blocks"
-  type        = list(string)
-  default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
-}
-
-# outputs.tf
-output "cluster_name" {
-  description = "Kubernetes Cluster Name"
-  value       = module.eks.cluster_name
-}
-
-output "cluster_endpoint" {
-  description = "Endpoint for EKS control plane"
-  value       = module.eks.cluster_endpoint
-}
-
-output "cluster_security_group_id" {
-  description = "Security group ids attached to the cluster control plane"
-  value       = module.eks.cluster_security_group_id
-}
-
-output "kubectl_config" {
-  description = "kubectl config as generated by the module"
-  value       = module.eks.kubeconfig
-}
-
-output "region" {
-  description = "AWS region"
-  value       = var.aws_region
-}
-
-output "vpc_id" {
-  description = "VPC ID"
-  value       = module.vpc.vpc_id
+  depends_on = [helm_release.karpenter]
 }
