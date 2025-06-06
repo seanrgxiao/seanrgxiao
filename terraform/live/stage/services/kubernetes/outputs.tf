@@ -1,31 +1,49 @@
-# outputs.tf
-
-output "cluster_name" {
-  description = "Kubernetes 集群名称"
-  value       = module.eks.cluster_name
-}
-
+# 输出 EKS 集群 Endpoint
 output "cluster_endpoint" {
-  description = "EKS 控制平面端点"
-  value       = module.eks.cluster_endpoint
+  description = "EKS 集群的 Kubernetes API Server Endpoint"
+  value       = aws_eks_cluster.eks.endpoint
 }
 
-output "cluster_security_group_id" {
-  description = "集群控制平面关联的安全组 ID"
-  value       = module.eks.cluster_security_group_id
+# 输出 EKS 集群 CA 证书
+output "cluster_ca_certificate_data" {
+  description = "用于 kubectl 访问的 CA 证书"
+  value       = aws_eks_cluster.eks.certificate_authority[0].data
 }
 
-output "kubectl_config" {
-  description = "kubectl 配置文件"
-  value       = module.eks.kubeconfig
+# 输出 kubeconfig 片段示例（用户可以自己拼接到本地的 kubeconfig）
+output "kubeconfig" {
+  description = "可拷贝到本地 kubeconfig 的片段示例"
+  value = <<EOF
+apiVersion: v1
+clusters:
+- cluster:
+    server: ${aws_eks_cluster.eks.endpoint}
+    certificate-authority-data: ${aws_eks_cluster.eks.certificate_authority[0].data}
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: aws
+  name: aws
+current-context: aws
+kind: Config
+preferences: {}
+users:
+- name: aws
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: aws
+      args:
+        - "eks"
+        - "get-token"
+        - "--cluster-name"
+        - "${aws_eks_cluster.eks.name}"
+EOF
 }
 
-output "region" {
-  description = "AWS 区域"
-  value       = var.aws_region
-}
-
-output "vpc_id" {
-  description = "VPC ID"
-  value       = module.vpc.vpc_id
+# 输出 NodeGroup 中各节点的子网列表
+output "nodegroup_subnets" {
+  description = "EKS Worker 节点所在私有子网 ID 列表"
+  value       = aws_eks_node_group.node_group.subnet_ids
 }

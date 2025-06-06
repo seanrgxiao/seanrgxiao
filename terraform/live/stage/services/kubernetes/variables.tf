@@ -1,37 +1,53 @@
-# variables.tf
-
 variable "aws_region" {
-  description = "AWS 区域"
+  description = "要创建 EKS 集群的 AWS 区域"
   type        = string
-  default     = "ap-southeast-1"
+  default     = "us-east-1"
 }
 
 variable "cluster_name" {
   description = "EKS 集群名称"
   type        = string
-  default     = "eks-cluster-2025"
-}
-
-variable "environment" {
-  description = "环境名称"
-  type        = string
-  default     = "production"
+  default     = "tf-eks-demo"
 }
 
 variable "vpc_cidr" {
-  description = "VPC CIDR 块"
+  description = "VPC 的 CIDR"
   type        = string
   default     = "10.0.0.0/16"
 }
 
-variable "private_subnets" {
-  description = "私有子网 CIDR 块"
+variable "public_subnets_cidr" {
+  description = "公有子网的 CIDR 列表"
   type        = list(string)
   default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 }
 
-variable "public_subnets" {
-  description = "公有子网 CIDR 块"
+variable "private_subnets_cidr" {
+  description = "私有子网的 CIDR 列表"
   type        = list(string)
   default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+}
+
+variable "node_instance_type" {
+  description = "EKS 托管节点组使用的 EC2 实例类型"
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "desired_capacity" {
+  description = "EKS 托管节点组初始期望实例数"
+  type        = number
+  default     = 2
+}
+
+variable "max_capacity" {
+  description = "EKS 托管节点组最大实例数"
+  type        = number
+  default     = 3
+}
+
+variable "min_capacity" {
+  description = "EKS 托管节点组最小实例数"
+  type        = number
+  default     = 1
 }
