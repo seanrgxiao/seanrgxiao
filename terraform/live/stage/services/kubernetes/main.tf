@@ -38,7 +38,7 @@ provider "kubernetes" {
 # --------------------------------------------------
 resource "aws_security_group" "eks_cluster_sg" {
   name        = "${var.cluster_name}-cluster-sg"
-  description = "EKS 控制平面安全组"
+  description = "EKS cluster sg"
   vpc_id      = aws_vpc.main.id
 
   # —— 注意：去掉原本直接在这里引用 aws_security_group.eks_node_sg.id 的 ingress 部分 ——
@@ -61,7 +61,7 @@ resource "aws_security_group" "eks_cluster_sg" {
 
 resource "aws_security_group" "eks_node_sg" {
   name        = "${var.cluster_name}-node-sg"
-  description = "EKS Worker 节点安全组"
+  description = "EKS Worker sg"
   vpc_id      = aws_vpc.main.id
 
   # —— 注意：去掉原本这里直接引用 aws_security_group.eks_cluster_sg.id 的 ingress 部分 ——
@@ -95,7 +95,7 @@ resource "aws_security_group" "eks_node_sg" {
 # 2. 创建 “Cluster-SG 的 ingress，从 Node-SG 来的 443” 这条规则
 # --------------------------------------------------
 resource "aws_security_group_rule" "cluster_ingress_from_node" {
-  description            = "允许 Worker 节点 (eks_node_sg) 访问 控制平面 443 端口"
+  description            = "allow access 443"
   type                   = "ingress"
   from_port              = 443
   to_port                = 443
@@ -108,7 +108,7 @@ resource "aws_security_group_rule" "cluster_ingress_from_node" {
 # 3. 创建 “Node-SG 的 ingress，从 Cluster-SG 来的 443” 这条规则
 # --------------------------------------------------
 resource "aws_security_group_rule" "node_ingress_from_cluster" {
-  description            = "允许 控制平面 (eks_cluster_sg) 访问 Worker 节点 443"
+  description            = "allow cluster access node 443"
   type                   = "ingress"
   from_port              = 443
   to_port                = 443
