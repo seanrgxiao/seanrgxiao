@@ -233,12 +233,12 @@ resource "aws_eks_node_group" "node_group" {
 
   ami_type = "AL2_x86_64"   # Amazon Linux 2
 
-  remote_access {
-    ec2_ssh_key = "my-eks-keypair"  # 请提前在 AWS 控制台创建好对应的 Key Pair
-    source_security_group_ids = [
-      aws_security_group.eks_node_sg.id
-    ]
-  }
+  # remote_access {
+  #   ec2_ssh_key = "my-eks-keypair"  # 请提前在 AWS 控制台创建好对应的 Key Pair
+  #   source_security_group_ids = [
+  #     aws_security_group.eks_node_sg.id
+  #   ]
+  # }
 
   disk_size = 20   # 根卷大小（GiB）
 
