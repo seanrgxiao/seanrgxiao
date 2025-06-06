@@ -242,9 +242,9 @@ resource "aws_eks_node_group" "node_group" {
 
   disk_size = 20   # 根卷大小（GiB）
 
-  tags = {
-    Name = "${var.cluster_name}-node"
-  }
+  # tags = {
+  #   Name = "${var.cluster_name}-node"
+  # }
 
   depends_on = [
     aws_iam_role_policy_attachment.eks_node_attach
