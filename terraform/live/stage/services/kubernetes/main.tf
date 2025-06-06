@@ -200,9 +200,9 @@ resource "aws_eks_cluster" "eks" {
     aws_iam_role_policy_attachment.eks_cluster_attach
   ]
 
-  tags = {
-    Name = var.cluster_name
-  }
+  # tags = {
+  #   Name = var.cluster_name
+  # }
 }
 
 # 用于 kubernetes provider 的 Auth Token
