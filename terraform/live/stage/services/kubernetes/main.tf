@@ -33,25 +33,18 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.eks.token
   # load_config_file       = false
 }
-# 为 EKS 控制平面创建安全组
+# --------------------------------------------------
+# 1. 只创建 EKS 控制平面和 Worker 节点的 “空” 安全组（不带相互引用的 ingress）
+# --------------------------------------------------
 resource "aws_security_group" "eks_cluster_sg" {
   name        = "${var.cluster_name}-cluster-sg"
   description = "EKS 控制平面安全组"
   vpc_id      = aws_vpc.main.id
 
-  # 允许 Worker 节点向控制平面节点的通信
-  ingress {
-    description      = "Worker to Control Plane"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    security_groups  = [aws_security_group.eks_node_sg.id]
-    self             = false
-    cidr_blocks      = []
-    ipv6_cidr_blocks = []
-  }
+  # —— 注意：去掉原本直接在这里引用 aws_security_group.eks_node_sg.id 的 ingress 部分 ——
+  # 原本你写在这里的“Worker 到 Control Plane”这一段要单独抽到 aws_security_group_rule 里
 
-  # 控制平面节点对外公开 https 端口（kubectl/vpn 等）
+  # 下面的 egress 可以保留
   egress {
     description      = "Allow all outbound"
     from_port        = 0
@@ -66,25 +59,15 @@ resource "aws_security_group" "eks_cluster_sg" {
   }
 }
 
-# 为 EKS Worker 节点创建安全组
 resource "aws_security_group" "eks_node_sg" {
   name        = "${var.cluster_name}-node-sg"
   description = "EKS Worker 节点安全组"
   vpc_id      = aws_vpc.main.id
 
-  # 允许 Worker 节点与控制平面通信
-  ingress {
-    description      = "Worker to Control Plane"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    security_groups  = [aws_security_group.eks_cluster_sg.id]
-    self             = false
-    cidr_blocks      = []
-    ipv6_cidr_blocks = []
-  }
+  # —— 注意：去掉原本这里直接引用 aws_security_group.eks_cluster_sg.id 的 ingress 部分 ——
+  # 原本你写在这里的“Worker 和 Control Plane 通信”要抽到 aws_security_group_rule
 
-  # 允许节点组内节点相互通信（NodePort、Pod 互通等）
+  # 允许节点组内节点相互通信
   ingress {
     description = "Node to Node communication"
     from_port   = 0
@@ -93,7 +76,7 @@ resource "aws_security_group" "eks_node_sg" {
     self        = true
   }
 
-  # 允许 Node 出站访问 Internet
+  # 保留出站放通
   egress {
     description      = "Allow all outbound"
     from_port        = 0
@@ -107,6 +90,33 @@ resource "aws_security_group" "eks_node_sg" {
     Name = "${var.cluster_name}-node-sg"
   }
 }
+
+# --------------------------------------------------
+# 2. 创建 “Cluster-SG 的 ingress，从 Node-SG 来的 443” 这条规则
+# --------------------------------------------------
+resource "aws_security_group_rule" "cluster_ingress_from_node" {
+  description            = "允许 Worker 节点 (eks_node_sg) 访问 控制平面 443 端口"
+  type                   = "ingress"
+  from_port              = 443
+  to_port                = 443
+  protocol               = "tcp"
+  security_group_id      = aws_security_group.eks_cluster_sg.id  # 规则归属：Control Plane SG
+  source_security_group_id = aws_security_group.eks_node_sg.id    # 来源：Node SG
+}
+
+# --------------------------------------------------
+# 3. 创建 “Node-SG 的 ingress，从 Cluster-SG 来的 443” 这条规则
+# --------------------------------------------------
+resource "aws_security_group_rule" "node_ingress_from_cluster" {
+  description            = "允许 控制平面 (eks_cluster_sg) 访问 Worker 节点 443"
+  type                   = "ingress"
+  from_port              = 443
+  to_port                = 443
+  protocol               = "tcp"
+  security_group_id      = aws_security_group.eks_node_sg.id     # 规则归属：Node SG
+  source_security_group_id = aws_security_group.eks_cluster_sg.id # 来源：Cluster SG
+}
+
 # IAM Role: EKS 集群角色
 resource "aws_iam_role" "eks_cluster_role" {
   name = "${var.cluster_name}-cluster-role"
