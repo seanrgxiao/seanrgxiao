@@ -1,13 +1,13 @@
 variable "aws_region" {
   description = "要创建 EKS 集群的 AWS 区域"
   type        = string
-  default     = "us-east-1"
+  default     = "ap-southeast-1"
 }
 
 variable "cluster_name" {
   description = "EKS 集群名称"
   type        = string
-  default     = "tf-eks-demo"
+  default     = "sean-eks-demo"
 }
 
 variable "vpc_cidr" {
