@@ -69,13 +69,13 @@ resource "aws_route_table_association" "public_assoc" {
   route_table_id = aws_route_table.public.id
 }
 
-# # 创建 NAT Gateway（放在第一个公有子网上）
-# resource "aws_eip" "nat_eip" {
-#   # vpc = true
-#   tags = {
-#     Name = "${var.cluster_name}-nat-eip"
-#   }
-# }
+# 创建 NAT Gateway（放在第一个公有子网上）
+resource "aws_eip" "nat_eip" {
+  # vpc = true
+  tags = {
+    Name = "${var.cluster_name}-nat-eip"
+  }
+}
 
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat_eip.id
